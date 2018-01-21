@@ -1,0 +1,16 @@
+# general
+
+frequency: 30
+# sensor_timeout: 100
+two_d_mode: True
+
+# frames
+map_frame: map
+odom_frame: odom
+base_link_frame: base_link
+# world_frame is set individually
+
+transform_time_offset: 0
+
+publish_tf: True
+
