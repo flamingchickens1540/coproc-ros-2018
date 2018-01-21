@@ -1,16 +1,17 @@
 <launch>
-  <arg name="lidar_name" default="lidar"/>
-  <arg name="lidar_frame" default="$(arg lidar_name)"/>
-  <arg name="lidar_topic" default="scan"/>
-  <arg name="lidar_port" default="0"/>
+  <arg name="frame" default="rplidar"/>
+  <arg name="transform" default="0 0 0 0 0 1 0 base_link"/>
+  <arg name="topic" default="scan"/>
+  <arg name="port" default="0"/>
+  <arg name="machine" default="local"/>
 
-  <node name="$(arg lidar_name)_broadcaster" pkg="rplidar_ros" type="rplidarNode" required="true" output="screen">
-  <remap from="scan" to="$(arg lidar_topic)"/>
-    <param name="serial_port"         type="string" value="$(eval '/dev/ttyUSB' + str(lidar_port))"/>  
+  <node machine="$(arg machine)" name="broadcaster" pkg="rplidar_ros" type="rplidarNode" respawn="true" output="screen">
+    <remap from="scan" to="$(arg topic)"/>
+    <param name="serial_port"         type="string" value="$(eval '/dev/ttyUSB' + str(port))"/>  
     <param name="serial_baudrate"     type="int"    value="115200"/>
-    <param name="frame_id"            type="string" value="$(arg lidar_frame)"/>
+    <param name="frame_id"            type="string" value="$(arg frame)"/>
     <param name="inverted"            type="bool"   value="false"/>
     <param name="angle_compensate"    type="bool"   value="true"/>
   </node>
-  <node pkg="tf" type="static_transform_publisher" name="$(arg lidar_name)_link_broadcaster" args="$(eval '0.273 0.3175 0.3302 0 0 1 0 base_link ' + str(lidar_frame) + ' 100')" required="true" />
+  <node machine="$(arg machine)" pkg="tf" type="static_transform_publisher" name="link_broadcaster" args="$(eval str(transform) + str(frame) + ' 100')" respawn="true" />
 </launch>

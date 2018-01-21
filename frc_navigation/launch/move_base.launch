@@ -1,24 +1,27 @@
 <launch>
-  <arg name="rvizconfig" default="$(find frc_2dnav)/rviz/config.rviz" />-->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
-  
-  <node name="robot_pub" pkg="frc_2dnav" type="network_tables_publisher.py" output="screen"/>
+  <include file="$(find frc_navigation)/launch/includes/machines.xml"/>
+
+  <node name="robot_pub" pkg="frc_navigation" type="network_tables_publisher.py" output="screen"/>
 
   <!--<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" output="screen"/>-->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find frc_2dnav)/maps/lego_lab2.yaml" output="screen"/>
+  <node pkg="map_server" type="map_server" respawn="true" name="map_server" args="$(find frc_navigation)/maps/testing/lego_lab2.yaml" output="screen"/>
 
-  <node pkg="amcl" type="amcl" name="amcl" output="screen">
-    <rosparam file="$(find frc_2dnav)/config/localization/amcl.yaml" command="load"/>
+  <node pkg="amcl" type="amcl" respawn="true" name="amcl" output="screen">
+    <rosparam file="$(find frc_navigation)/config/localization/amcl.yaml" command="load"/>
     <remap from="scan" to="lidar/scan"/>
   </node>
 
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base">
-    <rosparam file="$(find frc_2dnav)/config/costmap/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find frc_2dnav)/config/costmap/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find frc_2dnav)/config/costmap/global_costmap_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find frc_2dnav)/config/costmap/local_costmap_params.yaml" command="load" ns="local_costmap" />
+  <node pkg="robot_localization" type="ekf_localization_node" respawn="true" name="odom_localization" clear_params="true" output="screen">
+    <rosparam command="load" file="$(find frc_navigation)/config/ekf_params.yaml" />
+  </node>
 
-    <rosparam file="$(find frc_2dnav)/config/teb_local_planner_params.yaml" command="load" />
+  <node pkg="move_base" type="move_base" respawn="true" name="move_base">
+    <rosparam file="$(find frc_navigation)/config/costmap/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find frc_navigation)/config/costmap/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find frc_navigation)/config/costmap/global_costmap_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find frc_navigation)/config/costmap/local_costmap_params.yaml" command="load" ns="local_costmap" />
+
+    <rosparam file="$(find frc_navigation)/config/teb_local_planner_params.yaml" command="load" />
 
     <remap from="cmd_vel" to="robot_pub/cmd_vel"/>
 
@@ -26,12 +29,8 @@
     <param name="controller_frequency" value="10.0" />
   </node>
 
-  <node pkg="robot_localization" type="ekf_localization_node" respawn="false" name="odom_localization" clear_params="true" output="screen">
-    <rosparam command="load" file="$(find frc_2dnav)/config/ekf_params.yaml" />
-  </node>
-
-  <group ns="lidar">
-    <machine name="kangaroo" default="true" address="robotics-kangaroo" env-loader="/opt/ros/kinetic/env.sh" user="robotics" password="robotics1540" />
-    <include file="$(find frc_2dnav)/launch/rplidar.launch"/>
-  </group>
+  <include file="$(find frc_navigation)/launch/includes/rplidar.xml" ns="rear_lidar">
+    <param name="frame" value="rear_lidar" />
+    <arg name="transform" default="0 0 0 0 0 1 0 base_link"/>
+  </include>
 </launch>

@@ -1,0 +1,4 @@
+<launch>
+    <machine name="local" default="true" address="localhost" env-loader="/opt/ros/kinetic/env.sh" user="robotics" password="robotics1540" />
+    <machine name="coproc" default="false" address="robotics-kangaroo" env-loader="/opt/ros/kinetic/env.sh" user="robotics" password="robotics1540" />
+</launch>
